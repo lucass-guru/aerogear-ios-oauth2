@@ -112,6 +112,7 @@ open class OAuth2Module: AuthzModule {
         applicationLaunchNotificationObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, queue: nil, using: { (notification: Notification!) -> Void in
             self.extractCode(notification, completionHandler: completionHandler)
             if ( self.webView != nil || self.customDismiss) {
+                self.webView?.modalPresentationStyle = .fullScreen
                 UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true, completion: nil)
             }
         })
