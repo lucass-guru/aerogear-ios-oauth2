@@ -92,6 +92,8 @@ open class OAuth2Module: AuthzModule {
             self.customDismiss = true
         }
 
+        self.webView?.modalPresentationStyle = .fullScreen
+
         self.http = Http(baseURL: config.baseURL, requestSerializer: requestSerializer, responseSerializer:  responseSerializer)
         self.state = .authorizationStateUnknown
     }
