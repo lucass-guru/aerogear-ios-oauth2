@@ -83,16 +83,19 @@ open class OAuth2Module: AuthzModule {
 
         self.config = config
 
-        if config.webView == .embeddedWebView {
+        if config.webView == .embeddedWebView
+        || config.webView == .embeddedWebViewFullScreen {
             self.webView = OAuth2WebViewController()
             self.customDismiss = true
+        }
+
+        if config.webView == .embeddedWebViewFullScreen {
+            self.webView?.modalPresentationStyle = .fullScreen
         }
 
         if config.webView == .safariViewController {
             self.customDismiss = true
         }
-
-        self.webView?.modalPresentationStyle = .fullScreen
 
         self.http = Http(baseURL: config.baseURL, requestSerializer: requestSerializer, responseSerializer:  responseSerializer)
         self.state = .authorizationStateUnknown

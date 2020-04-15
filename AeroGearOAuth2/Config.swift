@@ -107,6 +107,7 @@ open class Config {
     */
     public enum WebViewType {
         case embeddedWebView
+        case embeddedWebViewFullScreen
         case externalSafari
         case safariViewController
     }
