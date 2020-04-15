@@ -86,6 +86,7 @@ open class OAuth2Module: AuthzModule {
         if config.webView == .embeddedWebView
         || config.webView == .embeddedWebViewFullScreen {
             self.webView = OAuth2WebViewController()
+            self.webView?.hasBackButton = true
             self.customDismiss = true
         }
 
@@ -151,6 +152,11 @@ open class OAuth2Module: AuthzModule {
 
         if let url = URL(string:computedUrl.absoluteString + params) {
             switch config.webView {
+            case .embeddedWebViewFullScreen:
+                if self.webView != nil {
+                    self.webView!.targetURL = url
+                    config.webViewHandler(self.webView!, completionHandler)
+                }
             case .embeddedWebView:
                 if self.webView != nil {
                     self.webView!.targetURL = url

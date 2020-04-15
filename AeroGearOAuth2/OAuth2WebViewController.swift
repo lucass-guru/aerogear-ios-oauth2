@@ -27,6 +27,8 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     var targetURL: URL!
     /// WebView instance used to load login page.
     var webView: UIWebView = UIWebView()
+    /// WebView back button
+    var hasBackButton: Bool = false
 
     /// Override of viewDidLoad to load the login page.
     override open func viewDidLoad() {
@@ -34,7 +36,36 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
         webView.frame = UIScreen.main.bounds
         webView.delegate = self
         self.view.addSubview(webView)
+        
+        if hasBackButton {
+            var topPadding: CGFloat = 0.0
+            
+            if #available(iOS 11.0, *) {
+                let window = UIApplication.shared.keyWindow
+                topPadding = window?.safeAreaInsets.top ?? 0.0
+                //let bottomPadding = window?.safeAreaInsets.bottom
+            }
+            
+            let backImage = UIImage(named: "baseline_keyboard_arrow_left_black")
+            let button = UIButton(frame: CGRect(x: 5, y: topPadding + 5, width: 40, height: 40))
+            
+            button.backgroundColor = .white
+            button.layer.cornerRadius = 0.5 * button.bounds.size.width
+            button.layer.borderWidth = 1
+            button.layer.borderColor = UIColor.black.cgColor
+            button.setImage(backImage, for: .normal)
+            button.addTarget(self, action: #selector(buttonPressed(sender:)), for: .touchUpInside)
+            
+            webView.scrollView.addSubview(button)
+        }
+        
         loadAddressURL()
+    }
+
+    @IBAction func buttonPressed(sender: UIButton!) {
+        if webView.canGoBack {
+            webView.goBack()
+        }
     }
 
     override open func viewDidLayoutSubviews() {
