@@ -29,6 +29,8 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     var webView: UIWebView = UIWebView()
     /// WebView back button
     var hasBackButton: Bool = false
+    
+    var button: UIButton? = nil;
 
     /// Override of viewDidLoad to load the login page.
     override open func viewDidLoad() {
@@ -47,21 +49,32 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
             }
             
             let backImage = UIImage(named: "baseline_keyboard_arrow_left_black")
-            let button = UIButton(frame: CGRect(x: 5, y: topPadding + 5, width: 40, height: 40))
             
-            button.backgroundColor = .white
-            button.layer.cornerRadius = 0.5 * button.bounds.size.width
-            button.layer.borderWidth = 1
-            button.layer.borderColor = UIColor.black.cgColor
-            button.setImage(backImage, for: .normal)
-            button.addTarget(self, action: #selector(buttonPressed(sender:)), for: .touchUpInside)
+            button = UIButton(frame: CGRect(x: 5, y: topPadding + 5, width: 40, height: 40))
+            button?.backgroundColor = .white
+            button?.layer.cornerRadius = 0.5 * (button?.bounds.size.width)!
+            button?.layer.borderWidth = 1
+            button?.layer.borderColor = UIColor.black.cgColor
+            button?.setImage(backImage, for: .normal)
+            button?.isHidden = true
+            button?.addTarget(self, action: #selector(buttonPressed(sender:)), for: .touchUpInside)
             
-            webView.scrollView.addSubview(button)
+            if button != nil {
+                webView.scrollView.addSubview(button!)
+            }
+            
+            if #available(iOS 10.0, *) {
+                Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (t) in
+                    self.button?.isHidden = !self.webView.canGoBack
+                }
+            } else {
+                self.button?.isHidden = false
+            }
         }
         
         loadAddressURL()
     }
-
+    
     @IBAction func buttonPressed(sender: UIButton!) {
         if webView.canGoBack {
             webView.goBack()
