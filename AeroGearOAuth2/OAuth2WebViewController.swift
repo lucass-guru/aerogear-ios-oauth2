@@ -38,11 +38,14 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     /// Override of viewDidLoad to load the login page.
     override open func viewDidLoad() {
         super.viewDidLoad()
+        self.view.backgroundColor = .white
         webView.frame = UIScreen.main.bounds
         webView.delegate = self
         self.view.addSubview(webView)
         
         if hasBackButton {
+            webView.frame = CGRect( x:0, y:44, width: view.frame.size.width, height: view.frame.size.height - 44 )
+            
             let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 44))
             view.addSubview(navBar)
 
@@ -79,7 +82,7 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
 
     override open func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.webView.frame = self.view.bounds
+        //self.webView.frame = self.view.bounds
     }
 
     override open func didReceiveMemoryWarning() {
