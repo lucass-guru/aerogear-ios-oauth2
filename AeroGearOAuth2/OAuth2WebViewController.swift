@@ -29,8 +29,11 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     var webView: UIWebView = UIWebView()
     /// WebView back button
     var hasBackButton: Bool = false
-    
-    var button: UIButton? = nil;
+    var backButton: UIBarButtonItem = {
+        let customBackButton = UIBarButtonItem(image: UIImage(named: "baseline_keyboard_arrow_left_black") , style: .plain, target: self, action: #selector(buttonPressed(sender:)))
+        customBackButton.imageInsets = UIEdgeInsets(top: 2, left: -8, bottom: 0, right: 0)
+        return customBackButton
+    }()
 
     /// Override of viewDidLoad to load the login page.
     override open func viewDidLoad() {
@@ -40,42 +43,35 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
         self.view.addSubview(webView)
         
         if hasBackButton {
-            var topPadding: CGFloat = 0.0
+            let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 44))
+            view.addSubview(navBar)
+
+            let navItem = UINavigationItem()
+            navItem.hidesBackButton = true
             
-            if #available(iOS 11.0, *) {
-                let window = UIApplication.shared.keyWindow
-                topPadding = window?.safeAreaInsets.top ?? 0.0
-                //let bottomPadding = window?.safeAreaInsets.bottom
-            }
-            
-            let backImage = UIImage(named: "baseline_keyboard_arrow_left_black")
-            
-            button = UIButton(frame: CGRect(x: 5, y: topPadding + 5, width: 40, height: 40))
-            button?.backgroundColor = .white
-            button?.layer.cornerRadius = 0.5 * (button?.bounds.size.width)!
-            button?.layer.borderWidth = 1
-            button?.layer.borderColor = UIColor.black.cgColor
-            button?.setImage(backImage, for: .normal)
-            button?.isHidden = true
-            button?.addTarget(self, action: #selector(buttonPressed(sender:)), for: .touchUpInside)
-            
-            if button != nil {
-                webView.scrollView.addSubview(button!)
-            }
-            
-            if #available(iOS 10.0, *) {
-                Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (t) in
-                    self.button?.isHidden = !self.webView.canGoBack
-                }
-            } else {
-                self.button?.isHidden = false
-            }
+            navItem.leftBarButtonItem = backButton
+
+            navBar.setItems([navItem], animated: false)
         }
         
         loadAddressURL()
     }
     
-    @IBAction func buttonPressed(sender: UIButton!) {
+    open override var prefersStatusBarHidden: Bool {
+        return true
+    }
+    
+    open func webViewDidStartLoad(_ : UIWebView) {
+        if webView.canGoBack {
+            backButton.isEnabled = true
+        }
+        else {
+            backButton.isEnabled = false
+        }
+    }
+    
+    
+    @objc func buttonPressed(sender: UIButton!) {
         if webView.canGoBack {
             webView.goBack()
         }
