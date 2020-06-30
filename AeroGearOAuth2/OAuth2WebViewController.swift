@@ -18,15 +18,17 @@
 import Foundation
 
 import UIKit
+import WebKit
+
 /**
 OAuth2WebViewController is a UIViewController to be used when the Oauth2 flow used an embedded view controller
 rather than an external browser approach.
 */
-open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
+open class OAuth2WebViewController: UIViewController {
     /// Login URL for OAuth.
     var targetURL: URL!
     /// WebView instance used to load login page.
-    var webView: UIWebView = UIWebView()
+    var webView: WKWebView?
     /// WebView back button
     var hasBackButton: Bool = false
     var backButton: UIBarButtonItem = {
@@ -39,12 +41,12 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
     override open func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-        webView.frame = UIScreen.main.bounds
-        webView.delegate = self
-        self.view.addSubview(webView)
+        webView = buildWebView()
+        webView?.navigationDelegate = self
+        //self.view.addSubview(webView)
         
         if hasBackButton {
-            webView.frame = CGRect( x:0, y:44, width: view.frame.size.width, height: view.frame.size.height - 44 )
+            webView?.frame = CGRect( x:0, y:44, width: view.frame.size.width, height: view.frame.size.height - 44 )
             
             let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 44))
             view.addSubview(navBar)
@@ -64,19 +66,11 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
         return true
     }
     
-    open func webViewDidStartLoad(_ : UIWebView) {
-        if webView.canGoBack {
-            backButton.isEnabled = true
-        }
-        else {
-            backButton.isEnabled = false
-        }
-    }
-    
-    
     @objc func buttonPressed(sender: UIButton!) {
-        if webView.canGoBack {
-            webView.goBack()
+        guard let canGoBack = webView?.canGoBack else { return }
+        
+        if canGoBack {
+            webView?.goBack()
         }
     }
 
@@ -91,6 +85,48 @@ open class OAuth2WebViewController: UIViewController, UIWebViewDelegate {
 
     func loadAddressURL() {
         let req = URLRequest(url: targetURL)
-        webView.loadRequest(req)
+        webView?.load(req)
     }
 }
+
+extension OAuth2WebViewController: WKNavigationDelegate {
+    func buildWebView() -> WKWebView {
+        let config = WKWebViewConfiguration()
+        let bodyStyle = "body { margin:0; }"
+        let source = "var node = document.createElement(\"style\"); node.innerHTML = \"\(bodyStyle)\";document.body.appendChild(node);"
+
+        let script = WKUserScript(
+                    source: source,
+                    injectionTime: .atDocumentEnd,
+                    forMainFrameOnly: false
+                )
+
+        config.userContentController.addUserScript(script)
+        
+        var r = self.view.frame
+        r.origin = CGPoint( x: 0, y: 0 )
+        let webView: WKWebView = self.view.viewWithTag(-99) as? WKWebView ?? WKWebView( frame: r, configuration: config )
+        
+        webView.tag = -99
+        webView.autoresizingMask = [.flexibleLeftMargin, .flexibleTopMargin, .flexibleRightMargin, .flexibleBottomMargin, .flexibleWidth, .flexibleHeight ]
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.scrollView.contentInset = .zero
+        webView.scrollView.layer.masksToBounds = false
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.scrollView.bouncesZoom = false
+        
+        self.view.addSubview( webView )
+        return webView
+    }
+    
+    open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if webView.canGoBack {
+            backButton.isEnabled = true
+        }
+        else {
+            backButton.isEnabled = false
+        }
+    }
+}
+
