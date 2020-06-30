@@ -128,5 +128,20 @@ extension OAuth2WebViewController: WKNavigationDelegate {
             backButton.isEnabled = false
         }
     }
+    
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        let url = navigationAction.request.url
+        let app = UIApplication.shared
+        
+        if !(url!.scheme!.starts( with: "http" )) {
+            if app.canOpenURL(url!) {
+                app.openURL(url!)
+                decisionHandler( .cancel )
+                return
+            }
+        }
+        
+        decisionHandler( .allow )
+    }
 }
 
